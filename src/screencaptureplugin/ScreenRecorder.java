@@ -8,6 +8,8 @@ import com.xuggle.xuggler.IVideoPicture;
 import com.xuggle.xuggler.video.ConverterFactory;
 import com.xuggle.xuggler.video.IConverter;
 import java.awt.AWTException;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
@@ -100,14 +102,16 @@ public class ScreenRecorder {
                 Robot r;
                 try {
                     r = new Robot();
-                    Rectangle screensize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+                    Rectangle screensize = new Rectangle(0, 0, 0, 0);
+                for (GraphicsDevice gd : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+                    screensize = screensize.union(gd.getDefaultConfiguration().getBounds());
+                }
 
                 writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, screensize.width, screensize.height);
                 start = System.currentTimeMillis();
                 inicio = System.currentTimeMillis();   
 		while(sw!=0) {
-
-			BufferedImage image = r.createScreenCapture(screensize);
+                        BufferedImage image = new Robot().createScreenCapture(screensize);
                         BufferedImage image2 = ConverterFactory.convertToType(image, BufferedImage.TYPE_3BYTE_BGR);
                         IConverter converter = ConverterFactory.createConverter(image2, IPixelFormat.Type.YUV420P);            
                         IVideoPicture frame = converter.toPicture(image2, (System.currentTimeMillis() - start) * 1000);
