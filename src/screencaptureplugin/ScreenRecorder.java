@@ -8,6 +8,7 @@ import com.xuggle.xuggler.IVideoPicture;
 import com.xuggle.xuggler.video.ConverterFactory;
 import com.xuggle.xuggler.video.IConverter;
 import java.awt.AWTException;
+import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
@@ -47,18 +48,34 @@ public class ScreenRecorder {
     private static long inicio;
     private static long fin;
     
+    
     private static final Logger logger = Logger.getLogger(ScreenRecorder.class.getName());
     
-    public int id_camera;
     public int fps_op;
     public int sw=1;
+    public int IMG_WIDTH;
+    public int IMG_HEIGHT;
     
-    public ScreenRecorder(File stageFolder, ProjectOrganization org, Participant p,int FPS,ScreenCaptureConfiguration c){
+    public ScreenRecorder(File stageFolder, ProjectOrganization org, Participant p,int FPS,int dim,ScreenCaptureConfiguration c){
         participant = p;
         this.org = org;
         this.config = c;
         this.fps_op=FPS;
         createFile(stageFolder);
+        switch(dim){
+            case 0:
+                IMG_WIDTH = 800;
+                IMG_HEIGHT = 600;
+            case 1:
+                IMG_WIDTH = 1024;
+                IMG_HEIGHT = 768;
+            case 2:
+                IMG_WIDTH = 1280;
+                IMG_HEIGHT = 720;
+            case 3:
+                IMG_WIDTH = 1366;
+                IMG_HEIGHT = 768;
+        }
     }
 
     private void createFile(File parent) {
@@ -103,18 +120,22 @@ public class ScreenRecorder {
                 try {
                     r = new Robot();
                     Rectangle screensize = new Rectangle(0, 0, 0, 0);
+                    int count = 0;
                 for (GraphicsDevice gd : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
                     screensize = screensize.union(gd.getDefaultConfiguration().getBounds());
+                    count++;
                 }
 
-                writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, screensize.width, screensize.height);
+                writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264,IMG_WIDTH,IMG_HEIGHT);
                 start = System.currentTimeMillis();
                 inicio = System.currentTimeMillis();   
 		while(sw!=0) {
                         BufferedImage image = new Robot().createScreenCapture(screensize);
-                        BufferedImage image2 = ConverterFactory.convertToType(image, BufferedImage.TYPE_3BYTE_BGR);
-                        IConverter converter = ConverterFactory.createConverter(image2, IPixelFormat.Type.YUV420P);            
-                        IVideoPicture frame = converter.toPicture(image2, (System.currentTimeMillis() - start) * 1000);
+                        int type = image.getType() == 0? BufferedImage.TYPE_INT_ARGB : image.getType();
+                        image = resizeImage(image,type);
+                        image = ConverterFactory.convertToType(image, BufferedImage.TYPE_3BYTE_BGR);
+                        IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);            
+                        IVideoPicture frame = converter.toPicture(image, (System.currentTimeMillis() - start) * 1000);
                         writer.encodeVideo(0, frame);
                         switch(fps_op){
                                 case 0:
@@ -172,6 +193,14 @@ public class ScreenRecorder {
                 }
            }              
 	}
+        
+        private BufferedImage resizeImage(BufferedImage originalImage, int type){
+            BufferedImage resizedImage = new BufferedImage(IMG_WIDTH,IMG_HEIGHT,type);
+            Graphics2D g = resizedImage.createGraphics();
+            g.drawImage(originalImage,0,0,IMG_WIDTH,IMG_HEIGHT,null);
+            g.dispose();
+            return resizedImage;
+        }
         
         public void StartRecord(){            
                 Thread t=new Thread(new Record());

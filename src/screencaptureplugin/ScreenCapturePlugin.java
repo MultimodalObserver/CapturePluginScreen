@@ -48,7 +48,7 @@ public class ScreenCapturePlugin implements CaptureProvider {
         boolean accepted = dialog.showDialog();
 
         if (accepted) {
-            ScreenCaptureConfiguration configuration = new ScreenCaptureConfiguration(dialog.getConfigurationName(),dialog.fps_option);
+            ScreenCaptureConfiguration configuration = new ScreenCaptureConfiguration(dialog.getConfigurationName(),dialog.fps_option,dialog.dim_option);
 
             configurations.add(configuration);
             return configuration;

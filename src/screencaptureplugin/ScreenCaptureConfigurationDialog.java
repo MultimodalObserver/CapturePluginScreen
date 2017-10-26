@@ -19,7 +19,9 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
     JTextField nameField;
     JButton accept;
     JComboBox cbFPS;
+    JComboBox cbDIM;
     public int fps_option;
+    public int dim_option;
     ProjectOrganization org;    
 
     boolean accepted = false;
@@ -51,15 +53,22 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
         JLabel label = new JLabel("Configuration name: ");
         JLabel fps = new JLabel("FPS:");
         String[] frames = {"15","30","45","60"};
+        JLabel dim = new JLabel("Dimension:");
+        String[] dimensiones = {"800x600","1024x768","1280x720","1366x768"};
         cbFPS = new JComboBox(frames);
+        cbDIM = new JComboBox(dimensiones);
+        cbFPS.setSelectedIndex(3);
+        cbDIM.setSelectedIndex(3);
         nameField = new JTextField();
         nameField.getDocument().addDocumentListener(this);
 
         gbc.gx(0).gy(0).f(GridBConstraints.HORIZONTAL).a(GridBConstraints.FIRST_LINE_START).i(new Insets(5, 5, 5, 5));
         add(label, gbc);
         add(nameField, gbc.gx(2).wx(1).gw(3));
-        add(fps,gbc.gx(0).gy(4));
-        add(cbFPS,gbc.gx(2).gy(4).wx(1).gw(3));
+        add(fps,gbc.gx(0).gy(2));
+        add(cbFPS,gbc.gx(2).gy(2).wx(1).gw(3));
+        add(dim,gbc.gx(0).gy(4));
+        add(cbDIM,gbc.gx(2).gy(4).wx(1).gw(3));
               
 
         errorLabel = new JLabel("");
@@ -73,6 +82,7 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
             public void actionPerformed(ActionEvent e) {
                 accepted = true;
                 fps_option=cbFPS.getSelectedIndex(); //0==15; 1 == 30; 2== 45; 3==60
+                dim_option=cbDIM.getSelectedIndex();
                 setVisible(false);
                 dispose();
             }
