@@ -55,12 +55,14 @@ public class ScreenRecorder {
     public int sw=1;
     public int IMG_WIDTH;
     public int IMG_HEIGHT;
+    public int screen_op;
     
-    public ScreenRecorder(File stageFolder, ProjectOrganization org, Participant p,int FPS,int dim,ScreenCaptureConfiguration c){
+    public ScreenRecorder(File stageFolder, ProjectOrganization org, Participant p,int FPS,int dim,int screen,ScreenCaptureConfiguration c){
         participant = p;
         this.org = org;
         this.config = c;
         this.fps_op=FPS;
+        this.screen_op=screen;
         createFile(stageFolder);
         switch(dim){
             case 0:
@@ -119,10 +121,21 @@ public class ScreenRecorder {
                 Robot r;
                 try {
                     r = new Robot();
-                    Rectangle screensize = new Rectangle(0, 0, 0, 0);
-                    int count = 0;
+                    Rectangle screensize = null;
+                    int count = 1;
                 for (GraphicsDevice gd : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
-                    screensize = screensize.union(gd.getDefaultConfiguration().getBounds());
+                    
+                    Rectangle bounds = gd.getDefaultConfiguration().getBounds();
+                    if(screen_op==0){
+                        screensize = new Rectangle(0, 0, 0, 0);
+                        screensize = screensize.union(gd.getDefaultConfiguration().getBounds());                        
+                    }
+                    else{
+                        if(count==screen_op){                            
+                            screensize = new Rectangle((int) bounds.getMinX(),
+                    (int) bounds.getMinY(), (int) bounds.getWidth(), (int) bounds.getHeight());    
+                        }
+                    }
                     count++;
                 }
 

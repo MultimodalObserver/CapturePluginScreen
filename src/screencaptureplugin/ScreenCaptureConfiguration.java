@@ -14,13 +14,15 @@ public class ScreenCaptureConfiguration implements RecordableConfiguration {
     private String id;
     private int fps;
     private int dim;
+    private int pantalla;
     ScreenRecorder sr;    
     private static final Logger logger = Logger.getLogger(ScreenRecorder.class.getName());
 
-    ScreenCaptureConfiguration(String id, int fps, int dim) {
+    ScreenCaptureConfiguration(String id, int fps, int dim, int pantalla) {
         this.id = id;
         this.fps = fps;
         this.dim = dim;
+        this.pantalla = pantalla;
     }
     
     ScreenCaptureConfiguration(){
@@ -29,7 +31,7 @@ public class ScreenCaptureConfiguration implements RecordableConfiguration {
 
     @Override
     public void setupRecording(File stageFolder, ProjectOrganization org, Participant p) {
-         sr = new ScreenRecorder(stageFolder, org, p,fps,dim, this);
+         sr = new ScreenRecorder(stageFolder, org, p,fps,dim,pantalla,this);
     }
 
     @Override
@@ -50,7 +52,7 @@ public class ScreenCaptureConfiguration implements RecordableConfiguration {
     @Override
     public File toFile(File parent) {
         try {
-            File f = new File(parent, "screen_"+id+"-"+fps+"_"+dim+".xml");
+            File f = new File(parent, "screen_"+id+"-"+fps+"_"+dim+"-"+pantalla+".xml");
             f.createNewFile();
             return f;
         } catch (IOException ex) {
@@ -65,8 +67,9 @@ public class ScreenCaptureConfiguration implements RecordableConfiguration {
         if (fileName.contains("_") && fileName.contains(".") && fileName.contains("-")){
             String newId = fileName.substring(fileName.indexOf('_') + 1, fileName.indexOf("-"));
             String newfps = fileName.substring(fileName.indexOf('-') + 1, fileName.lastIndexOf("_"));
-            String newdim = fileName.substring(fileName.lastIndexOf("_")+1,fileName.lastIndexOf("."));
-            ScreenCaptureConfiguration c = new ScreenCaptureConfiguration(newId,Integer.parseInt(newfps),Integer.parseInt(newdim));
+            String newdim = fileName.substring(fileName.lastIndexOf("_")+1,fileName.lastIndexOf("-"));
+            String newpantalla = fileName.substring(fileName.lastIndexOf("-")+1,fileName.lastIndexOf("."));
+            ScreenCaptureConfiguration c = new ScreenCaptureConfiguration(newId,Integer.parseInt(newfps),Integer.parseInt(newdim),Integer.parseInt(newpantalla));
             return c;
         }
         return null;
