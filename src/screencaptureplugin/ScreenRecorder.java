@@ -39,6 +39,7 @@ public class ScreenRecorder {
     private ScreenCaptureConfiguration config;
     private File output;
     private File arInicio;
+    private File frames;
     private String path;
     private String file_name;
     private FileOutputStream outputStream;    
@@ -53,6 +54,7 @@ public class ScreenRecorder {
     
     public int fps_op;
     public int sw=1;
+    public long time;
     public int IMG_WIDTH;
     public int IMG_HEIGHT;
     public int screen_op;
@@ -89,6 +91,7 @@ public class ScreenRecorder {
 
         output = new File(parent, reportDate + "_" + config.getId() + ".mp4");
         arInicio = new File(parent, reportDate + "_" + config.getId() + "-temp.txt");
+        frames = new File(parent, reportDate + "_" + config.getId() + "-frames.txt");
         path = parent.getAbsolutePath();
         file_name = reportDate + "_"+config.getId();
         try {
@@ -138,18 +141,23 @@ public class ScreenRecorder {
                     }
                     count++;
                 }
-
                 writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264,IMG_WIDTH,IMG_HEIGHT);
                 start = System.currentTimeMillis();
                 inicio = System.currentTimeMillis();   
+                BufferedWriter bw2;
+                try {
+                    bw2 = new BufferedWriter(new FileWriter(frames));
 		while(sw!=0) {
                         BufferedImage image = new Robot().createScreenCapture(screensize);
                         int type = image.getType() == 0? BufferedImage.TYPE_INT_ARGB : image.getType();
-                        image = resizeImage(image,type);
+                        if(screensize.width!=IMG_WIDTH && screensize.height !=IMG_HEIGHT){ image = resizeImage(image,type);}
                         image = ConverterFactory.convertToType(image, BufferedImage.TYPE_3BYTE_BGR);
-                        IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);            
-                        IVideoPicture frame = converter.toPicture(image, (System.currentTimeMillis() - start) * 1000);
+                        IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);      
+                        time = System.currentTimeMillis();
+			IVideoPicture frame = converter.toPicture(image, (time-start) * 1000);
+                        bw2.write(time+"\n");
                         writer.encodeVideo(0, frame);
+                        
                         switch(fps_op){
                                 case 0:
                             {
@@ -185,7 +193,10 @@ public class ScreenRecorder {
                             }
                         }
 		}
-                fin = System.currentTimeMillis();
+                bw2.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
+                }fin = time;
 		writer.close();
                 BufferedWriter bw;
                 try {
