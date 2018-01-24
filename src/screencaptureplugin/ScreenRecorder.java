@@ -126,12 +126,26 @@ public class ScreenRecorder {
                     r = new Robot();
                     Rectangle screensize = null;
                     int count = 1;
+                    String devs = "";
+                    int x=100000,y=100000,h=0,w=0;
                 for (GraphicsDevice gd : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
                     
                     Rectangle bounds = gd.getDefaultConfiguration().getBounds();
                     if(screen_op==0){
-                        screensize = new Rectangle(0, 0, 0, 0);
-                        screensize = screensize.union(gd.getDefaultConfiguration().getBounds());                        
+                        System.out.println("x: "+bounds.x +
+                                " y: " + bounds.y +
+                                " width: " + bounds.width +
+                                " height: "+ bounds.height);
+                        if(bounds.x<x){
+                            x=bounds.x;
+                        }
+                        if(bounds.y<y){
+                            y=bounds.y;
+                        }
+                        if(h<bounds.height){
+                            h=bounds.height;
+                        }
+                        w=w+bounds.width;                     
                     }
                     else{
                         if(count==screen_op){                            
@@ -140,6 +154,9 @@ public class ScreenRecorder {
                         }
                     }
                     count++;
+                }
+                if(screen_op==0){
+                    screensize = new Rectangle(x,y,w,h);
                 }
                 writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264,IMG_WIDTH,IMG_HEIGHT);
                 start = System.currentTimeMillis();
