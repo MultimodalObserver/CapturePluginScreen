@@ -2,6 +2,7 @@ package screencaptureplugin;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -24,7 +25,8 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
     public int fps_option;
     public int dim_option;
     public int pantalla_option;
-    ProjectOrganization org;    
+    ProjectOrganization org;   
+    ResourceBundle dialogBundle = java.util.ResourceBundle.getBundle("properties/principal"); 
 
     boolean accepted = false;
 
@@ -52,12 +54,12 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
         setLayout(new GridBagLayout());
         GridBConstraints gbc = new GridBConstraints();
 
-        JLabel label = new JLabel("Configuration name: ");
+        JLabel label = new JLabel(dialogBundle.getString("configuration_n"));
         JLabel fps = new JLabel("FPS:");
         String[] frames = {"15","30","45","60"};
-        JLabel dim = new JLabel("Dimension:");
+        JLabel dim = new JLabel(dialogBundle.getString("dim"));
         String[] dimensiones = {"800x600","1024x768","1280x720","1366x768"};
-        JLabel screen = new JLabel("Screen:");
+        JLabel screen = new JLabel(dialogBundle.getString("scr"));
         int count=0;
         for (GraphicsDevice gd : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
             count++;
@@ -65,7 +67,7 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
         String[] pantallas;
         if(count>1){
             pantallas = new String[count+1];
-            pantallas[0] = "Extended";
+            pantallas[0] = dialogBundle.getString("ext");
             count=1;
         }
         else{ 
@@ -99,7 +101,7 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
         errorLabel.setForeground(Color.red);
         add(errorLabel, gbc.gx(0).gy(7).gw(5).a(GridBConstraints.LAST_LINE_START).wy(1));
 
-        accept = new JButton("Accept");
+        accept = new JButton(dialogBundle.getString("accept"));
         
         accept.addActionListener(new ActionListener() {
             @Override
@@ -143,7 +145,7 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
 
     private void updateState() {
         if (nameField.getText().isEmpty()) {
-            errorLabel.setText("A name for this configuration must be specified");
+            errorLabel.setText(dialogBundle.getString("name"));
             accept.setEnabled(false);
         } else {
             errorLabel.setText("");

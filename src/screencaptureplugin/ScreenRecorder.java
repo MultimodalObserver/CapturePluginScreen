@@ -44,10 +44,10 @@ public class ScreenRecorder {
     private String file_name;
     private FileOutputStream outputStream;    
     private FileDescription desc;    
-    static long start;
-    static long pause;
-    private static long inicio;
-    private static long fin;
+    private long start;
+    private long pause;
+    private long inicio;
+    private long fin;
     
     
     private static final Logger logger = Logger.getLogger(ScreenRecorder.class.getName());
@@ -132,10 +132,6 @@ public class ScreenRecorder {
                     
                     Rectangle bounds = gd.getDefaultConfiguration().getBounds();
                     if(screen_op==0){
-                        System.out.println("x: "+bounds.x +
-                                " y: " + bounds.y +
-                                " width: " + bounds.width +
-                                " height: "+ bounds.height);
                         if(bounds.x<x){
                             x=bounds.x;
                         }
@@ -161,59 +157,55 @@ public class ScreenRecorder {
                 writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264,IMG_WIDTH,IMG_HEIGHT);
                 start = System.currentTimeMillis();
                 inicio = System.currentTimeMillis();   
-                BufferedWriter bw2;
-                try {
-                    bw2 = new BufferedWriter(new FileWriter(frames));
-		while(sw!=0) {
-                        BufferedImage image = new Robot().createScreenCapture(screensize);
-                        int type = image.getType() == 0? BufferedImage.TYPE_INT_ARGB : image.getType();
-                        if(screensize.width!=IMG_WIDTH && screensize.height !=IMG_HEIGHT){ image = resizeImage(image,type);}
-                        image = ConverterFactory.convertToType(image, BufferedImage.TYPE_3BYTE_BGR);
-                        IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);      
-                        time = System.currentTimeMillis();
-			IVideoPicture frame = converter.toPicture(image, (time-start) * 1000);
-                        bw2.write(time+"\n");
-                        writer.encodeVideo(0, frame);
-                        
-                        switch(fps_op){
-                                case 0:
-                            {
-                                try {
-                                    Thread.sleep(25);
-                                } catch (InterruptedException ex) {
-                                    Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                                case 1:
-                            {
-                                try {
-                                    Thread.sleep(10);
-                                } catch (InterruptedException ex) {
-                                    Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                                case 2:
-                            {
-                                try {
-                                    Thread.sleep(4);
-                                } catch (InterruptedException ex) {
-                                    Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                                case 3: 
-                            }
-                        while(sw==2){                           
-                            try {       
-                                Thread.sleep(2);
+                //bw2 = new BufferedWriter(new FileWriter(frames));
+                while(sw!=0) {
+                    BufferedImage image = new Robot().createScreenCapture(screensize);
+                    int type = image.getType() == 0? BufferedImage.TYPE_INT_ARGB : image.getType();
+                    if(screensize.width!=IMG_WIDTH && screensize.height !=IMG_HEIGHT){ image = resizeImage(image,type);}
+                    image = ConverterFactory.convertToType(image, BufferedImage.TYPE_3BYTE_BGR);
+                    IConverter converter = ConverterFactory.createConverter(image, IPixelFormat.Type.YUV420P);
+                    time = System.currentTimeMillis();
+                    IVideoPicture frame = converter.toPicture(image, (time-start) * 1000);
+                    //bw2.write(time+"\n");
+                    writer.encodeVideo(0, frame);
+                    
+                    switch(fps_op){
+                        case 0:
+                        {
+                            try {
+                                Thread.sleep(25);
                             } catch (InterruptedException ex) {
                                 Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
-		}
-                bw2.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
-                }fin = time;
+                        case 1:
+                        {
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        case 2:
+                        {
+                            try {
+                                Thread.sleep(4);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        case 3:
+                    }
+                    while(sw==2){
+                        try {
+                            Thread.sleep(2);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+                // bw2.close();
+                fin = time;
 		writer.close();
                 BufferedWriter bw;
                 try {
