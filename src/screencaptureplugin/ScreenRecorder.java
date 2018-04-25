@@ -51,8 +51,9 @@ public class ScreenRecorder {
     
     
     private static final Logger logger = Logger.getLogger(ScreenRecorder.class.getName());
-    
-    public int fps_op;
+        
+    public int sleep;
+    public long fps_aux;
     public int sw=1;
     public long time;
     public int IMG_WIDTH;
@@ -63,7 +64,7 @@ public class ScreenRecorder {
         participant = p;
         this.org = org;
         this.config = c;
-        this.fps_op=FPS;
+        this.sleep = (int)(1000/FPS);
         this.screen_op=screen;
         createFile(stageFolder);
         switch(dim){
@@ -169,33 +170,14 @@ public class ScreenRecorder {
                     //bw2.write(time+"\n");
                     writer.encodeVideo(0, frame);
                     
-                    switch(fps_op){
-                        case 0:
-                        {
+                    while(fps_aux>System.currentTimeMillis()){
                             try {
-                                Thread.sleep(25);
+                                Thread.sleep(1);
                             } catch (InterruptedException ex) {
                                 Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
-                        case 1:
-                        {
-                            try {
-                                Thread.sleep(10);
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
-                        case 2:
-                        {
-                            try {
-                                Thread.sleep(4);
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(ScreenRecorder.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
-                        case 3:
-                    }
+                        fps_aux=fps_aux+sleep;
                     while(sw==2){
                         try {
                             Thread.sleep(2);

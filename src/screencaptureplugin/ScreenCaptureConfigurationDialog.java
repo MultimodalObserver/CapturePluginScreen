@@ -7,7 +7,10 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import mo.core.ui.GridBConstraints;
@@ -19,7 +22,7 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
     JLabel errorLabel;
     JTextField nameField;
     JButton accept;
-    JComboBox cbFPS;
+    JSpinner sFPS;
     JComboBox cbDIM;
     JComboBox cbPantalla;
     public int fps_option;
@@ -56,10 +59,9 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
 
         JLabel label = new JLabel(dialogBundle.getString("configuration_n"));
         JLabel fps = new JLabel("FPS:");
-        String[] frames = {"15","30","45","60"};
-        JLabel dim = new JLabel(dialogBundle.getString("dim"));
+        JLabel dim = new JLabel("Dimension:");
         String[] dimensiones = {"800x600","1024x768","1280x720","1366x768"};
-        JLabel screen = new JLabel(dialogBundle.getString("scr"));
+        JLabel screen = new JLabel("Screen:");
         int count=0;
         for (GraphicsDevice gd : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
             count++;
@@ -67,7 +69,7 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
         String[] pantallas;
         if(count>1){
             pantallas = new String[count+1];
-            pantallas[0] = dialogBundle.getString("ext");
+            pantallas[0] = "Extended";
             count=1;
         }
         else{ 
@@ -78,10 +80,10 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
             pantallas[count]=gd.getIDstring();
             count++;
         } 
-        cbFPS = new JComboBox(frames);
         cbDIM = new JComboBox(dimensiones);
         cbPantalla = new JComboBox(pantallas);
-        cbFPS.setSelectedIndex(3);
+        SpinnerModel model = new SpinnerNumberModel(5,5,45,1);
+        sFPS = new JSpinner(model);
         cbDIM.setSelectedIndex(3);
         nameField = new JTextField();
         nameField.getDocument().addDocumentListener(this);
@@ -90,7 +92,7 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
         add(label, gbc);
         add(nameField, gbc.gx(2).wx(1).gw(3));
         add(fps,gbc.gx(0).gy(2));
-        add(cbFPS,gbc.gx(2).gy(2).wx(1).gw(3));
+        add(sFPS,gbc.gx(2).gy(2).wx(1).gw(3));
         add(dim,gbc.gx(0).gy(4));
         add(cbDIM,gbc.gx(2).gy(4).wx(1).gw(3));
         add(screen,gbc.gx(0).gy(6));
@@ -107,7 +109,7 @@ public class ScreenCaptureConfigurationDialog extends JDialog implements Documen
             @Override
             public void actionPerformed(ActionEvent e) {
                 accepted = true;
-                fps_option=cbFPS.getSelectedIndex(); //0==15; 1 == 30; 2== 45; 3==60
+                fps_option=(int) sFPS.getValue();
                 dim_option=cbDIM.getSelectedIndex();
                 pantalla_option=cbPantalla.getSelectedIndex();
                 setVisible(false);
