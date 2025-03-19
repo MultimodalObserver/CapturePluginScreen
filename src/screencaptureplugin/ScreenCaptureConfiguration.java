@@ -15,15 +15,19 @@ public class ScreenCaptureConfiguration implements RecordableConfiguration {
     private int fps;
     private int dim;
     private int pantalla;
+    private int width;
+    private int height;
     ScreenRecorder sr;    
     private static final Logger logger = Logger.getLogger(ScreenRecorder.class.getName());
 
-    ScreenCaptureConfiguration(String id, int fps, int dim, int pantalla) {
+    ScreenCaptureConfiguration(String id, int fps, int width, int height, int pantalla) {
         this.id = id;
         this.fps = fps;
-        this.dim = dim;
+        this.width = width;
+        this.height = height;
         this.pantalla = pantalla;
     }
+
     
     ScreenCaptureConfiguration(){
         
@@ -31,8 +35,9 @@ public class ScreenCaptureConfiguration implements RecordableConfiguration {
 
     @Override
     public void setupRecording(File stageFolder, ProjectOrganization org, Participant p) {
-         sr = new ScreenRecorder(stageFolder, org, p,fps,dim,pantalla,this);
+        sr = new ScreenRecorder(stageFolder, org, p, fps, width, height, pantalla, this);
     }
+
 
     @Override
     public void startRecording() {
@@ -69,7 +74,14 @@ public class ScreenCaptureConfiguration implements RecordableConfiguration {
             String newfps = fileName.substring(fileName.indexOf('-') + 1, fileName.lastIndexOf("_"));
             String newdim = fileName.substring(fileName.lastIndexOf("_")+1,fileName.lastIndexOf("-"));
             String newpantalla = fileName.substring(fileName.lastIndexOf("-")+1,fileName.lastIndexOf("."));
-            ScreenCaptureConfiguration c = new ScreenCaptureConfiguration(newId,Integer.parseInt(newfps),Integer.parseInt(newdim),Integer.parseInt(newpantalla));
+            ScreenCaptureConfiguration c = new ScreenCaptureConfiguration(
+                    newId,
+                    Integer.parseInt(newfps),
+                    width,
+                    height,
+                    Integer.parseInt(newpantalla)
+            );
+
             return c;
         }
         return null;

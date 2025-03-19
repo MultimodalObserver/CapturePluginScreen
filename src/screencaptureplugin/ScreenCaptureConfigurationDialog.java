@@ -1,162 +1,224 @@
 package screencaptureplugin;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ResourceBundle;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import mo.core.ui.GridBConstraints;
-import mo.core.ui.Utils;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import mo.organization.ProjectOrganization;
 
-public class ScreenCaptureConfigurationDialog extends JDialog implements DocumentListener {
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
-    JLabel errorLabel;
-    JTextField nameField;
-    JButton accept;
-    JSpinner sFPS;
-    JComboBox cbDIM;
-    JComboBox cbPantalla;
-    public int fps_option;
-    public int dim_option;
-    public int pantalla_option;
-    ProjectOrganization org;   
-    ResourceBundle dialogBundle = java.util.ResourceBundle.getBundle("properties/principal"); 
+public class ScreenCaptureConfigurationDialog extends Stage {
 
-    boolean accepted = false;
+    private Label errorLabel;
+    private TextField nameField;
+    private Spinner<Integer> sFPS;
+    private ComboBox<String> cbDIM;
+    private ComboBox<String> cbPantalla;
+    private Button accept;
+    private Button cancel;
+    
+    private int selectedWidth;
+    private int selectedHeight;
 
-    public ScreenCaptureConfigurationDialog() {
-        super(null, "Screen Capture Configuration", Dialog.ModalityType.APPLICATION_MODAL);
-    }
+
+    private boolean accepted = false;
+    private int fps_option;
+    private int dim_option;
+    private int pantalla_option;
+    private final ProjectOrganization org;
+    ResourceBundle dialogBundle = ResourceBundle.getBundle("properties/principal");
 
     public ScreenCaptureConfigurationDialog(ProjectOrganization organization) {
-        super(null, "Screen Capture Configuration", Dialog.ModalityType.APPLICATION_MODAL);
+        setTitle(dialogBundle.getString("title"));
+        initModality(Modality.APPLICATION_MODAL);
         org = organization;
-    }
-
-    public boolean showDialog() {
-
-        setLayout(new GridBagLayout());
-
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                accepted = false;
-                super.windowClosing(e);
-            }
-        });
-
-        setLayout(new GridBagLayout());
-        GridBConstraints gbc = new GridBConstraints();
-
-        JLabel label = new JLabel(dialogBundle.getString("configuration_n"));
-        JLabel fps = new JLabel("FPS:");
-        JLabel dim = new JLabel("Dimension:");
-        String[] dimensiones = {"800x600","1024x768","1280x720","1366x768"};
-        JLabel screen = new JLabel("Screen:");
-        int count=0;
-        for (GraphicsDevice gd : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
-            count++;
-        }
-        String[] pantallas;
-        if(count>1){
-            pantallas = new String[count+1];
-            pantallas[0] = "Extended";
-            count=1;
-        }
-        else{ 
-            pantallas = new String[count];           
-            count=0;
-        }
-        for (GraphicsDevice gd : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
-            pantallas[count]=gd.getIDstring();
-            count++;
-        } 
-        cbDIM = new JComboBox(dimensiones);
-        cbPantalla = new JComboBox(pantallas);
-        SpinnerModel model = new SpinnerNumberModel(5,5,45,1);
-        sFPS = new JSpinner(model);
-        cbDIM.setSelectedIndex(3);
-        nameField = new JTextField();
-        nameField.getDocument().addDocumentListener(this);
-
-        gbc.gx(0).gy(0).f(GridBConstraints.HORIZONTAL).a(GridBConstraints.FIRST_LINE_START).i(new Insets(5, 5, 5, 5));
-        add(label, gbc);
-        add(nameField, gbc.gx(2).wx(1).gw(3));
-        add(fps,gbc.gx(0).gy(2));
-        add(sFPS,gbc.gx(2).gy(2).wx(1).gw(3));
-        add(dim,gbc.gx(0).gy(4));
-        add(cbDIM,gbc.gx(2).gy(4).wx(1).gw(3));
-        add(screen,gbc.gx(0).gy(6));
-        add(cbPantalla,gbc.gx(2).gy(6).wx(1).gw(3));
-              
-
-        errorLabel = new JLabel("");
-        errorLabel.setForeground(Color.red);
-        add(errorLabel, gbc.gx(0).gy(7).gw(5).a(GridBConstraints.LAST_LINE_START).wy(1));
-
-        accept = new JButton(dialogBundle.getString("accept"));
         
-        accept.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                accepted = true;
-                fps_option=(int) sFPS.getValue();
-                dim_option=cbDIM.getSelectedIndex();
-                pantalla_option=cbPantalla.getSelectedIndex();
-                setVisible(false);
-                dispose();
-            }
+        initUI();
+    }
+
+    private void initUI() {
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(15));
+        grid.setVgap(10);
+        grid.setHgap(10);
+        grid.setAlignment(Pos.CENTER);
+        grid.setStyle("-fx-background-color: #d6cfcf;");
+
+        Label nameLabel = new Label(dialogBundle.getString("configuration_n"));
+        grid.add(nameLabel, 0, 0);
+
+        nameField = new TextField();
+        nameField.setMaxWidth(270);
+        nameField.textProperty().addListener((observable, oldValue, newValue) -> updateState());
+        grid.add(nameField, 1, 0);
+
+        Label fpsLabel = new Label("FPS: ");
+        grid.add(fpsLabel, 0, 1);
+
+        sFPS = new Spinner<>(5, 45, 5, 1);
+        sFPS.setEditable(true);
+        sFPS.setMaxWidth(270);
+        grid.add(sFPS, 1, 1);
+
+        Label dimLabel = new Label("Dimension: ");
+        grid.add(dimLabel, 0, 2);
+
+        cbDIM = new ComboBox<>();
+        cbDIM.setMaxWidth(270);
+        grid.add(cbDIM, 1, 2);
+
+        Label screenLabel = new Label(dialogBundle.getString("screen"));
+        grid.add(screenLabel, 0, 3);
+
+        cbPantalla = new ComboBox<>();
+        cbPantalla.getItems().addAll(getScreenOptions());
+        cbPantalla.setMaxWidth(270);
+        cbPantalla.getSelectionModel().selectFirst();
+        cbPantalla.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> updateScreenDimensions(newVal.intValue()));
+        grid.add(cbPantalla, 1, 3);
+
+        errorLabel = new Label();
+        errorLabel.setTextFill(Color.RED);
+        GridPane.setColumnSpan(errorLabel, 2);
+        grid.add(errorLabel, 0, 4);
+
+        accept = new Button(dialogBundle.getString("accept"));
+        accept.setStyle("-fx-background-color: #b4eda6; -fx-text-fill: black;");
+        accept.setDisable(true);
+        accept.setOnAction(e -> {
+            accepted = true;
+            fps_option = sFPS.getValue();
+            dim_option = cbDIM.getSelectionModel().getSelectedIndex();
+            pantalla_option = cbPantalla.getSelectionModel().getSelectedIndex();
+            close();
         });
 
-        gbc.gx(0).gy(8).a(GridBConstraints.LAST_LINE_END).gw(3).wy(1).f(GridBConstraints.NONE);
-        add(accept, gbc);
+        cancel = new Button(dialogBundle.getString("cancel"));
+        cancel.setStyle("-fx-background-color: #ea908a; -fx-text-fill: black;");
+        cancel.setOnAction(e -> {
+            accepted = false;
+            close();
+        });
 
-        setMinimumSize(new Dimension(400, 150));
-        setPreferredSize(new Dimension(400, 300));
-        pack();
-        Utils.centerOnScreen(this);
-        updateState();
-        setVisible(true);
+        HBox buttonBox = new HBox(10, accept, cancel);
+        buttonBox.setAlignment(Pos.CENTER);
+        GridPane.setColumnSpan(buttonBox, 2);
+        grid.add(buttonBox, 0, 5);
 
-        return accepted;
+        Scene scene = new Scene(grid, 330, 230);
+        setScene(scene);
+
+        updateScreenDimensions(cbPantalla.getSelectionModel().getSelectedIndex());
+    }
+    
+    private void updateScreenDimensions(int screenIndex) {
+        cbDIM.getItems().clear();
+        GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+
+        if (devices.length == 0) {
+            return;
+        }
+
+        if (screenIndex == 0 && devices.length > 1) { 
+            cbDIM.getItems().add("1920x1080");
+            selectedWidth = 1920;
+            selectedHeight = 1080;
+            cbDIM.getSelectionModel().selectFirst();
+        } else if (screenIndex > 0 && screenIndex <= devices.length) {
+            GraphicsDevice selectedDevice = devices[screenIndex - 1];
+            Rectangle bounds = selectedDevice.getDefaultConfiguration().getBounds();
+            int width = bounds.width;
+            int height = bounds.height;
+
+            cbDIM.getItems().add(width + "x" + height);
+            cbDIM.getItems().add("1366x768");
+            cbDIM.getItems().add("1280x720");
+            cbDIM.getItems().add("1024x768");
+            cbDIM.getItems().add("800x600");
+
+            cbDIM.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                String[] dimensions = newVal.split("x");
+                selectedWidth = Integer.parseInt(dimensions[0]);
+                selectedHeight = Integer.parseInt(dimensions[1]);
+            });
+
+            cbDIM.getSelectionModel().selectFirst();
+        }
     }
 
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-        updateState();
+    
+    public int getSelectedWidth() {
+        String dimension = cbDIM.getValue();
+        return Integer.parseInt(dimension.split("x")[0]);
     }
 
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        updateState();
+    public int getSelectedHeight() {
+        String dimension = cbDIM.getValue();
+        return Integer.parseInt(dimension.split("x")[1]);
     }
 
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-        updateState();
-    }
+
+
 
     private void updateState() {
         if (nameField.getText().isEmpty()) {
             errorLabel.setText(dialogBundle.getString("name"));
-            accept.setEnabled(false);
+            accept.setDisable(true);
         } else {
             errorLabel.setText("");
-            accept.setEnabled(true);
+            accept.setDisable(false);
         }
+    }
+
+    private List<String> getScreenOptions() {
+        List<String> screens = new ArrayList<>();
+        GraphicsDevice[] devices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+
+        if (devices.length > 1) {
+            screens.add(dialogBundle.getString("extended"));
+        }
+        for (int i = 0; i < devices.length; i++) {
+            screens.add(dialogBundle.getString("screen_option") + " " + (i + 1));
+        }
+        return screens;
+    }
+
+
+
+    public boolean showDialog() {
+        showAndWait();
+        return accepted;
+    }
+    
+    public boolean isAccepted() {
+        return accepted;
     }
 
     public String getConfigurationName() {
         return nameField.getText();
     }
-}
 
+    public int getFpsOption() {
+        return fps_option;
+    }
+
+    public int getDimensionOption() {
+        return dim_option;
+    }
+
+    public int getScreenOption() {
+        return pantalla_option;
+    }
+}

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.stage.Stage;
 import mo.capture.CaptureProvider;
 import mo.core.plugin.Extends;
 import mo.core.plugin.Extension;
@@ -42,13 +43,20 @@ public class ScreenCapturePlugin implements CaptureProvider {
 
     @Override
     public Configuration initNewConfiguration(ProjectOrganization organization) {
-
-         dialog = new ScreenCaptureConfigurationDialog(organization);
+        dialog = new ScreenCaptureConfigurationDialog(organization);
 
         boolean accepted = dialog.showDialog();
 
         if (accepted) {
-            ScreenCaptureConfiguration configuration = new ScreenCaptureConfiguration(dialog.getConfigurationName(),dialog.fps_option,dialog.dim_option,dialog.pantalla_option);
+            ScreenCaptureConfiguration configuration = new ScreenCaptureConfiguration(
+                    dialog.getConfigurationName(),
+                    dialog.getFpsOption(),
+                    dialog.getSelectedWidth(),
+                    dialog.getSelectedHeight(),
+                    dialog.getScreenOption()
+            );
+
+
 
             configurations.add(configuration);
             return configuration;
@@ -56,6 +64,7 @@ public class ScreenCapturePlugin implements CaptureProvider {
 
         return null;
     }
+
 
     @Override
     public List<Configuration> getConfigurations() {
